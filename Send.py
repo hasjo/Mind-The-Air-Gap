@@ -6,7 +6,8 @@ import time
 class ChuckConnector(object):
     def __init__(self, interval):
         chuck_command = shlex.split('chuck --loop')
-        self.chuck_process = subprocess.Popen(chuck_command)
+        self.chuck_process = subprocess.Popen(
+            chuck_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.interval = interval
         time.sleep(1)
 
@@ -33,22 +34,20 @@ class ChuckConnector(object):
         cmd = 'chuck + chuck_files/{fn}'
 
         if freq == 0:
-            print 'setting low'
             cmd = cmd.format(fn='sin_low.ck')
         elif freq == 1:
-            print 'setting high'
             cmd = cmd.format(fn='sin_high.ck')
         else:
-            print 'setting start'
             cmd = cmd.format(fn='sin_start.ck')
-        print 'chuck command: ' + cmd
-        subprocess.call(shlex.split(cmd))
+        subprocess.Popen(shlex.split(cmd))
 
     def send_string(self, s):
         s_bytes = list(ord(b) for b in s)
         for byte in s_bytes:
             for i in xrange(8):
-                send_bit((b >> i) & 1)
+                b = (byte >> i) & 1
+                print "Bit: " + str(b)
+                self.send_bit(b)
 
     def stop(self):
         self._clear_chuck()
@@ -57,8 +56,9 @@ class ChuckConnector(object):
 
 def main():
     cc = ChuckConnector(.1)
-    bits = [0, 1, 0, 1, 0, 1, 0, 1]
-    cc.send_bits(bits, .5)
+    # bits = [0, 0, 1, 1, 1, 1, 1, 1]
+    # cc.send_bits(bits, 0)
+    cc.send_string('hello')
     cc.stop()
 
 
