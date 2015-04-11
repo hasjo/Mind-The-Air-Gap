@@ -1,14 +1,29 @@
 import subprocess
+import locale
 import curses
+import datetime
 from curses import wrapper
+locale.setlocale(locale.LC_ALL, '')
+code = locale.getpreferredencoding()
 
 def ClearByte():
         return [-1,-1,-1,-1,-1,-1,-1,-1]
 
-def PrintTitle(stdscr,Xmax):
+def PrintTitle(stdscr,Xmax, Ymax):
+    BottomHeight = 5
     Title = "Ultras0nic Air-Gap Bridger"
     Xloc = (Xmax/2) - (len(Title)/2)
     stdscr.addstr(1,Xloc,Title)
+    stdscr.border()
+    stdscr.addstr(Ymax-BottomHeight,Xmax-1,u'\u2524'.encode(code))
+    stdscr.addstr(Ymax-BottomHeight,0,u'\u251c'.encode(code))
+    for x in range(1,Xmax-1):
+        stdscr.addstr(Ymax-BottomHeight,x,u'\u2500'.encode(code))
+    stdscr.addstr(Ymax-BottomHeight+1,2,"19125:")
+    stdscr.addstr(Ymax-BottomHeight+2,2,"19500:")
+    stdscr.addstr(Ymax-BottomHeight+3,2,"19875:")
+    stdscr.refresh()
+
 
 def main(stdscr):
     stdscr = curses.initscr()
@@ -20,8 +35,7 @@ def main(stdscr):
     ScreenSize = stdscr.getmaxyx()
     Ymax = ScreenSize[0]
     Xmax = ScreenSize[1]
-    stdscr.border()
-    PrintTitle(stdscr,Xmax)
+    PrintTitle(stdscr,Xmax, Ymax)
 
     # Starting Freq Analysis Stuff
     p = subprocess.Popen('chuck chuck_files/FFT.ck 2>&1 > /dev/null', 
@@ -35,7 +49,8 @@ def main(stdscr):
     PrintBit = False
     StartBit = False
     MessageX = 2
-    MessageY = 2
+    MessageY = 3
+    TimeStamp = datetime.datetime.now() - datetime.timedelta(seconds = 2)
 
     while True:
         stdscr.refresh()
@@ -53,6 +68,16 @@ def main(stdscr):
                 #print NewOutList[1]
 
                 if float(NewOutList[1]) > .0020:
+                    #check current time
+                    #compare to previous time
+                    #clear buff if greater than X seconds
+                    Now = datetime.datetime.now()
+                    NowDelta = Now - TimeStamp
+                    if NowDelta.seconds > 1:
+                        ByteString = ""
+                        CurrentByte = ClearByte()
+                    TimeStamp = Now
+
                     FreqList.insert(0,int(NewOutList[0]))
                     FreqList.pop()
                     streak = FreqList.count(FreqList[0]) == len(FreqList)
@@ -79,13 +104,18 @@ def main(stdscr):
                             for x in CurrentByte:
                                 ByteString += str(x)
                             BinChar = chr(int(ByteString,2))
-                            stdscr.addstr( 2, (Xmax/2)-4, ByteString)
-                            stdscr.addch(MessageY, MessageX, BinChar)
-                            MessageX += 1
+                            if BinChar == '\n':
+                                MessageY += 1
+                                MessageX = 2
+                            else:
+                                stdscr.addstr( 2, (Xmax/2)-4, ByteString)
+                                stdscr.addch(MessageY, MessageX, BinChar)
+                                MessageX += 1
                             if MessageX == Xmax-2:
                                 MessageY += 1
-                                MessageX == 2
+                                MessageX = 2
                             stdscr.refresh()
                             CurrentByte = ClearByte()
                             ByteString = ""
+
 wrapper(main)
