@@ -1,3 +1,4 @@
+import datetime
 import shlex
 import subprocess
 import time
@@ -29,7 +30,6 @@ class ChuckConnector(object):
         time.sleep(self.interval)
 
     def set_freq(self, freq):
-        print freq
         self._clear_chuck()
         cmd = 'chuck + chuck_files/{fn}'
 
@@ -46,7 +46,6 @@ class ChuckConnector(object):
         for byte in s_bytes:
             for i in xrange(8):
                 b = (byte >> i) & 1
-                print "Bit: " + str(b)
                 self.send_bit(b)
 
     def stop(self):
@@ -55,10 +54,17 @@ class ChuckConnector(object):
 
 
 def main():
-    cc = ChuckConnector(.1)
-    # bits = [0, 0, 1, 1, 1, 1, 1, 1]
-    # cc.send_bits(bits, 0)
-    cc.send_string('hello')
+    cc = ChuckConnector(0.015)
+    u_in = None
+
+    while not u_in == 'quit':
+        u_in = raw_input('Message: ')
+        print 'sending...'
+        start = datetime.datetime.now()
+        cc.send_string(u_in)
+        delta = datetime.datetime.now() - start
+        print 'complete. time: {s}'.format(s=str(delta))
+
     cc.stop()
 
 
