@@ -18,14 +18,14 @@ def ClearByte():
 while p.poll() is None:
     output = p.stdout.readline()
     if "Spacer" in output:
-#        print ''
-         pass
+        #print ''
+        pass
 
     else:
         NewOut = output.strip().replace('.000000','')
         NewOut = NewOut.replace(')','').replace('%(','').replace(',',' ').replace('*pi','')
         NewOutList = NewOut.split()
-#        print NewOutList[1]
+        #print NewOutList[1]
 
         if float(NewOutList[1]) > .0020:
             FreqList.insert(0,int(NewOutList[0]))
