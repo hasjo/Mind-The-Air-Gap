@@ -4,8 +4,16 @@ p = subprocess.Popen('chuck chuck_files/FFT.ck 2>&1 > /dev/null', shell=True, st
 
 CurrentFreq = 0
 FreqList = [1,2,3,4]
+CurrentByte = [-1,-1,-1,-1,-1,-1,-1]
 JustCaught = 0
 streak = False
+PrintBit = False
+StartBit = False
+
+def ClearByte():
+    return [-1,-1,-1,-1,-1,-1,-1,-1]
+
+
 while p.poll() is None:
     output = p.stdout.readline()
     if "Spacer" in output:
@@ -24,5 +32,28 @@ while p.poll() is None:
             streak = FreqList.count(FreqList[0]) == len(FreqList)
             if streak:
                 if JustCaught != NewOutList[0]:
-                    print "Caught " + str(JustCaught)
+                    PrintBit = True
+                    #print 'Caught ' + NewOutList[0]
                 JustCaught = NewOutList[0]
+
+            if PrintBit:
+                if JustCaught == "19125":
+                    StartBit = True
+                    PrintBit = False
+                    print 'Start'
+                elif JustCaught == "19500" and StartBit:
+                    PrintBit = False
+                    StartBit = False
+                    CurrentByte.insert(0,0)
+                    CurrentByte.pop()
+                    print CurrentByte
+                elif JustCaught == "19875" and StartBit:
+                    PrintBit = False
+                    StartBit = False
+                    CurrentByte.insert(0,1)
+                    CurrentByte.pop()
+                    print CurrentByte
+
+                if CurrentByte.count(-1) == 0:
+                    CurrentByte.reverse()
+                    print CurrentByte
