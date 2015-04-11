@@ -7,7 +7,7 @@ adc => FFT fft => blackhole;
 second / samp => float samplingRate;
 
 //Set the bin size
-100 => fft.size;
+128 => fft.size;
 
 //Get the first half of the spectrum
 complex spectral[fft.size()/2];
