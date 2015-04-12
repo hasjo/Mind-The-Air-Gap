@@ -1,6 +1,9 @@
+import curses
 import datetime
+import os
 import shlex
 import subprocess
+import sys
 import time
 
 
@@ -65,20 +68,47 @@ class ChuckConnector(object):
         self.chuck_process.kill()
 
 
-def main():
-    cc = ChuckConnector(0.02) # 0.02 is good
+def main(screen, argv):
+    cc = ChuckConnector(0.15) # 0.02 is good
     u_in = None
 
-    while not u_in == 'quit':
-        u_in = raw_input('Message: ') + '\n'
-        print 'sending...'
-        start = datetime.datetime.now()
-        cc.send_string(u_in)
-        delta = datetime.datetime.now() - start
-        print 'complete. time: {s}'.format(s=str(delta))
+    if screen:
+        screen.nodelay(True)
+
+    else:
+        if len(argv) == 2:
+            fn = argv[1]
+
+            if not os.path.exists(fn):
+                raise RuntimeError('file does not exist')
+
+            f = open(fn)
+            data = f.read()
+            print 'sending file: ' + fn
+            print 'file contents:'
+            print data
+            start = datetime.datetime.now()
+            cc.send_bit(1)
+            cc.send_string(data + '\0')
+            delta = datetime.datetime.now() - start
+            s = 'complete. time: {s}'.format(s=str(delta))
+            print s
+
+        else:
+            while not u_in == 'quit':
+                u_in = raw_input('Message: ') + '\0'
+                print 'sending...'
+                start = datetime.datetime.now()
+                # PUT THIS BACK IN
+                # cc.send_bit(0)
+                cc.send_string(u_in)
+                delta = datetime.datetime.now() - start
+                s = 'complete. time: {s}'.format(s=str(delta))
+                print s
 
     cc.stop()
 
 
 if __name__ == '__main__':
-    main()
+    # curses.wrapper(main)
+    main(None, sys.argv)
