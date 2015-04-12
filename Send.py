@@ -1,10 +1,15 @@
 import curses
 import datetime
+import locale
 import os
 import shlex
 import subprocess
 import sys
 import time
+
+
+locale.setlocale(locale.LC_ALL, '')
+code = locale.getpreferredencoding()
 
 
 class ChuckConnector(object):
@@ -68,12 +73,50 @@ class ChuckConnector(object):
         self.chuck_process.kill()
 
 
+def print_title(scr, x_max, y_max):
+    bottom = 5
+    title = 'Ultrasonic Air-Gap Sender'
+    title_loc = (x_max/2) - (len(title)/2)
+    scr.addstr(1, title_loc, title)
+
+    scr.border()
+    scr.addstr(y_max - bottom, x_max - 1, u'\u2524'.encode(code))
+    scr.addstr(y_max - bottom, 0, u'\u251c'.encode(code))
+    for x in range(1, x_max - 1):
+        scr.addstr(y_max - bottom, x, u'\u2500'.encode(code))
+
+    scr.addstr(y_max - bottom+1,2,"19125:")
+    scr.addstr(y_max - bottom+2,2,"19500:")
+    scr.addstr(y_max - bottom+3,2,"19875:")
+    scr.refresh()
+
+
 def main(screen, argv):
-    cc = ChuckConnector(0.15) # 0.02 is good
+    cc = ChuckConnector(0.02) # 0.02 is good
     u_in = None
 
     if screen:
-        screen.nodelay(True)
+        screen.keypad(True)
+
+        options = ['Message', 'File', 'Exit']
+        screen.addstr(2, 2, 'Menu')
+        for y, o in enumerate(options, 1):
+            s = '{i}: {m}'.format(i=y, m=o)
+            screen.addstr(y + 2, 2, s)
+        size_yz = screen.getmaxyx()
+        print_title(screen, size_yz[1], size_yz[0])
+        screen.refresh()
+        c = screen.getch()
+        if c == 1:
+            pass
+        elif c == 2:
+            pass
+        elif c == 3:
+            pass
+        else:
+            pass
+
+
 
     else:
         if len(argv) == 2:
@@ -110,5 +153,5 @@ def main(screen, argv):
 
 
 if __name__ == '__main__':
-    # curses.wrapper(main)
-    main(None, sys.argv)
+    curses.wrapper(main, sys.argv)
+    # main(None, sys.argv)
