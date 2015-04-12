@@ -6,15 +6,18 @@ import time
 
 class ChuckConnector(object):
     def __init__(self, interval):
-        chuck_command = shlex.split('chuck --loop')
-        self.chuck_process = subprocess.Popen(
-            chuck_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.interval = interval
+        self._start_chuck()
         time.sleep(1)
 
     def _clear_chuck(self):
         cmd = 'chuck - 1'
         subprocess.call(shlex.split(cmd))
+
+    def _start_chuck(self):
+        chuck_command = shlex.split('chuck --loop')
+        self.chuck_process = subprocess.Popen(
+            chuck_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def send_bits(self, bits, interval):
         for b in bits:
@@ -41,6 +44,11 @@ class ChuckConnector(object):
             cmd = cmd.format(fn='sin_start.ck')
         subprocess.Popen(shlex.split(cmd))
 
+    def send_freq(self, freq, t):
+        self.set_freq(freq)
+        time.sleep(t)
+        self._clear_chuck()
+
     def send_string(self, s):
         s_bytes = list(ord(b) for b in s)
         for byte in s_bytes:
@@ -48,17 +56,21 @@ class ChuckConnector(object):
                 b = (byte >> i) & 1
                 self.send_bit(b)
 
+        self._clear_chuck()
+        self.chuck_process.kill()
+        self._start_chuck()
+
     def stop(self):
         self._clear_chuck()
         self.chuck_process.kill()
 
 
 def main():
-    cc = ChuckConnector(0.015)
+    cc = ChuckConnector(0.02) # 0.02 is good
     u_in = None
 
     while not u_in == 'quit':
-        u_in = raw_input('Message: ')
+        u_in = raw_input('Message: ') + '\n'
         print 'sending...'
         start = datetime.datetime.now()
         cc.send_string(u_in)
