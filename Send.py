@@ -112,7 +112,7 @@ def get_input(scr, y, x, s):
 
 
 def main(screen, argv):
-    cc = ChuckConnector(0.02) # 0.02 is good
+    cc = ChuckConnector(0.03) # 0.02 is good
     u_in = None
     screen.keypad(True)
     curses.curs_set(0)
@@ -134,7 +134,7 @@ def main(screen, argv):
 
                     start = datetime.datetime.now()
                     cc.send_bit(0)
-                    cc.send_string(u_in)
+                    cc.send_string(u_in + '\0')
                     delta = datetime.datetime.now() - start
                     s = 'Complete. time: {s}'.format(s=str(delta))
                     screen.addstr(5, 2, s)
