@@ -11,7 +11,7 @@ def ClearByte():
 
 def PrintTitle(stdscr,Xmax, Ymax):
     BottomHeight = 5
-    Title = "Ultras0nic Air-Gap Bridger"
+    Title = "Ultras0nic Air-Gap Receiver"
     Xloc = (Xmax/2) - (len(Title)/2)
     stdscr.addstr(1,Xloc,Title)
     stdscr.border()
@@ -48,6 +48,11 @@ def main(stdscr):
     MessageX = 2
     MessageY = 3
     TimeStamp = datetime.datetime.now() - datetime.timedelta(seconds = 2)
+    MessageCounter = 0
+    InfoBit = False
+    BitType = -1
+    FileOpen = False
+    OpenedFile = 0
 
     while True:
         stdscr.refresh()
@@ -69,8 +74,10 @@ def main(stdscr):
                     stdscr.move(Ymax-4,8)
                     stdscr.clrtoeol()
                     stdscr.addstr(Ymax-4,Xmax-1,u'\u2502'.encode(code))
-                    Range = Xmax-10
+                    Range = Xmax-11
                     ToFill = Range * (float(NewOutList[1])*10)
+                    if ToFill > Range :
+                        ToFill = Range
                     for x in range (8, int(ToFill)+8):
                         stdscr.addstr(Ymax-4,x,u'\u2588'.encode(code))
                     stdscr.refresh()
@@ -81,8 +88,10 @@ def main(stdscr):
                     stdscr.move(Ymax-3,8)
                     stdscr.clrtoeol()
                     stdscr.addstr(Ymax-3,Xmax-1,u'\u2502'.encode(code))
-                    Range = Xmax-10
+                    Range = Xmax-11
                     ToFill = Range * (float(NewOutList[1])*10)
+                    if ToFill > Range :
+                        ToFill = Range
                     for x in range (8, int(ToFill)+8):
                         stdscr.addstr(Ymax-3,x,u'\u2588'.encode(code))
                     stdscr.refresh()
@@ -93,8 +102,10 @@ def main(stdscr):
                     stdscr.move(Ymax-2,8)
                     stdscr.clrtoeol()
                     stdscr.addstr(Ymax-2,Xmax-1,u'\u2502'.encode(code))
-                    Range = Xmax-10
+                    Range = Xmax-11
                     ToFill = Range * (float(NewOutList[1])*10)
+                    if ToFill > Range :
+                        ToFill = Range
                     for x in range (8, int(ToFill)+8):
                         stdscr.addstr(Ymax-2,x,u'\u2588'.encode(code))
                     stdscr.refresh()
@@ -112,6 +123,15 @@ def main(stdscr):
 
                     FreqList.insert(0,int(NewOutList[0]))
                     FreqList.pop()
+
+                    if CurrentByte.count(-1) == 7 and not InfoBit:
+                        BitType = CurrentByte[0]
+                        CurrentByte = ClearByte()
+                        InfoBit = True
+                        if BitType == 1 and not FileOpen:
+                            OpenedFile = open("out",'w')
+                            stdscr.addch(1,1,'-')
+
                     streak = FreqList.count(FreqList[0]) == len(FreqList)
                     if streak:
                         if JustCaught != NewOutList[0]:
@@ -136,12 +156,28 @@ def main(stdscr):
                             for x in CurrentByte:
                                 ByteString += str(x)
                             BinChar = chr(int(ByteString,2))
-                            if BinChar == '\n':
-                                MessageY += 1
-                                MessageX = 2
+                            if BinChar == '\0':
+                                if BitType == 0:
+                                    MessageY += 1
+                                    MessageX = 2
+                                    InfoBit = False
+                                    BitType = -1
+                                else:
+                                    stdscr.addch(1,1,'$')
+                                    stdscr.refresh()
+                                    if OpenedFile:
+                                        OpenedFile.close()
+                                        OpenedFile = 0
+                                        stdscr.addch(1,1,'+')
+                                        stdscr.refresh()
+                                    InfoBit = False
+                                    BitType = -1
                             else:
                                 stdscr.addstr( 2, (Xmax/2)-4, ByteString)
-                                stdscr.addch(MessageY, MessageX, BinChar)
+                                if BitType == 0:
+                                   stdscr.addch(MessageY, MessageX, BinChar)
+                                if BitType == 1:
+                                    OpenedFile.write(BinChar)
                                 MessageX += 1
                             if MessageX == Xmax-2:
                                 MessageY += 1
