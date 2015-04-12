@@ -130,7 +130,7 @@ def main(stdscr):
                         InfoBit = True
                         if BitType == 1 and not FileOpen:
                             OpenedFile = open("out",'w')
-                            stdscr.addch(1,1,'-')
+                            #stdscr.addch(1,1,'-')
 
                     streak = FreqList.count(FreqList[0]) == len(FreqList)
                     if streak:
@@ -163,12 +163,12 @@ def main(stdscr):
                                     InfoBit = False
                                     BitType = -1
                                 else:
-                                    stdscr.addch(1,1,'$')
+                                    #stdscr.addch(1,1,'$')
                                     stdscr.refresh()
                                     if OpenedFile:
                                         OpenedFile.close()
                                         OpenedFile = 0
-                                        stdscr.addch(1,1,'+')
+                                        #stdscr.addch(1,1,'+')
                                         stdscr.refresh()
                                     InfoBit = False
                                     BitType = -1
