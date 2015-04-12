@@ -27,9 +27,6 @@ def PrintTitle(stdscr,Xmax, Ymax):
 
 def main(stdscr):
     stdscr = curses.initscr()
-    curses.noecho()
-    curses.cbreak()
-    stdscr.keypad(True)
     curses.curs_set(False)
     stdscr.nodelay(True)
     ScreenSize = stdscr.getmaxyx()
@@ -66,6 +63,41 @@ def main(stdscr):
                 NewOut = NewOut.replace(')','').replace('%(','').replace(',',' ').replace('*pi','')
                 NewOutList = NewOut.split()
                 #print NewOutList[1]
+                if NewOutList[0] == "19125":
+                    #clear the row
+                    #draw new row 
+                    stdscr.move(Ymax-4,8)
+                    stdscr.clrtoeol()
+                    stdscr.addstr(Ymax-4,Xmax-1,u'\u2502'.encode(code))
+                    Range = Xmax-10
+                    ToFill = Range * (float(NewOutList[1])*10)
+                    for x in range (8, int(ToFill)+8):
+                        stdscr.addstr(Ymax-4,x,u'\u2588'.encode(code))
+                    stdscr.refresh()
+                
+                if NewOutList[0] == "19500":
+                    #clear the row
+                    #draw new row 
+                    stdscr.move(Ymax-3,8)
+                    stdscr.clrtoeol()
+                    stdscr.addstr(Ymax-3,Xmax-1,u'\u2502'.encode(code))
+                    Range = Xmax-10
+                    ToFill = Range * (float(NewOutList[1])*10)
+                    for x in range (8, int(ToFill)+8):
+                        stdscr.addstr(Ymax-3,x,u'\u2588'.encode(code))
+                    stdscr.refresh()
+                
+                if NewOutList[0] == "19875":
+                    #clear the row
+                    #draw new row 
+                    stdscr.move(Ymax-2,8)
+                    stdscr.clrtoeol()
+                    stdscr.addstr(Ymax-2,Xmax-1,u'\u2502'.encode(code))
+                    Range = Xmax-10
+                    ToFill = Range * (float(NewOutList[1])*10)
+                    for x in range (8, int(ToFill)+8):
+                        stdscr.addstr(Ymax-2,x,u'\u2588'.encode(code))
+                    stdscr.refresh()
 
                 if float(NewOutList[1]) > .0020:
                     #check current time

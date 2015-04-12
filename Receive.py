@@ -1,4 +1,6 @@
 import subprocess
+import datetime
+import sys
 
 p = subprocess.Popen('chuck chuck_files/FFT.ck 2>&1 > /dev/null', shell=True, stdout = subprocess.PIPE,)
 
@@ -10,6 +12,7 @@ JustCaught = 0
 streak = False
 PrintBit = False
 StartBit = False
+TimeStamp = datetime.datetime.now() - datetime.timedelta(seconds = 2)
 
 def ClearByte():
     return [-1,-1,-1,-1,-1,-1,-1,-1]
@@ -28,6 +31,12 @@ while p.poll() is None:
         #print NewOutList[1]
 
         if float(NewOutList[1]) > .0020:
+            Now = datetime.datetime.now()
+            NowDelta = Now - TimeStamp
+            if NowDelta.seconds > 1:
+                ByteString = ""
+                CurrentByte = ClearByte()
+            TimeStamp = Now
             FreqList.insert(0,int(NewOutList[0]))
             FreqList.pop()
             streak = FreqList.count(FreqList[0]) == len(FreqList)
@@ -61,7 +70,7 @@ while p.poll() is None:
                     for x in CurrentByte:
                         ByteString += str(x)
                     #print ByteString
-                    print chr(int(ByteString,2))
+                    sys.stdout.write(chr(int(ByteString,2)))
                    # ByteString = ByteString.decode("binary")
                     CurrentByte = ClearByte()
                     ByteString = ""
