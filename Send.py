@@ -73,7 +73,10 @@ class ChuckConnector(object):
         self.chuck_process.kill()
 
 
-def print_title(scr, x_max, y_max):
+def print_title(scr):
+    size_yz = scr.getmaxyx()
+    x_max = size_yz[1]
+    y_max = size_yz[0]
     bottom = 5
     title = 'Ultrasonic Air-Gap Sender'
     title_loc = (x_max/2) - (len(title)/2)
@@ -90,31 +93,87 @@ def print_title(scr, x_max, y_max):
     scr.addstr(y_max - bottom+3,2,"19875:")
     scr.refresh()
 
+def print_menu(scr, opts, x, y):
+    scr.addstr(y, x, 'Menu')
+    for d, o in enumerate(opts, 1):
+        s = '{i}: {m}'.format(i=d, m=o)
+        scr.addstr(d + y, x, s)
+    scr.refresh()
+
+def get_input(scr, y, x, s):
+    curses.echo()
+    curses.curs_set(1)
+    scr.addstr(y, x, s)
+    scr.refresh()
+    u_in = scr.getstr(y + 1, x, 38)
+    curses.noecho()
+    curses.curs_set(0)
+    return u_in
+
 
 def main(screen, argv):
     cc = ChuckConnector(0.02) # 0.02 is good
     u_in = None
+    screen.keypad(True)
+    curses.curs_set(0)
 
     if screen:
-        screen.keypad(True)
+        while True:
+            screen.clear()
+            options = ['Message', 'File', 'Exit']
+            print_menu(screen, options, 2, 2)
+            print_title(screen)
+            c = screen.getch()
+            if c == ord('1'):
+                while True:
+                    screen.clear()
+                    print_title(screen)
+                    u_in = get_input(screen, 2, 2, 'Enter Message:')
+                    screen.addstr(4, 2, 'Sending message...')
+                    screen.refresh()
 
-        options = ['Message', 'File', 'Exit']
-        screen.addstr(2, 2, 'Menu')
-        for y, o in enumerate(options, 1):
-            s = '{i}: {m}'.format(i=y, m=o)
-            screen.addstr(y + 2, 2, s)
-        size_yz = screen.getmaxyx()
-        print_title(screen, size_yz[1], size_yz[0])
-        screen.refresh()
-        c = screen.getch()
-        if c == 1:
-            pass
-        elif c == 2:
-            pass
-        elif c == 3:
-            pass
-        else:
-            pass
+                    start = datetime.datetime.now()
+                    cc.send_bit(0)
+                    cc.send_string(u_in)
+                    delta = datetime.datetime.now() - start
+                    s = 'Complete. time: {s}'.format(s=str(delta))
+                    screen.addstr(5, 2, s)
+                    screen.addstr(7, 2, 'Press "m" to send another message.')
+                    screen.addstr(8, 2, 'Any other key returns to menu.')
+                    screen.refresh()
+                    c = screen.getch()
+
+                    if c != ord('m'):
+                        break
+
+            elif c == ord('2'):
+                screen.clear()
+                print_title(screen)
+                fn = get_input(screen, 2, 2, 'Enter Filename:')
+
+                if not os.path.exists(fn):
+                    raise RuntimeError('file does not exist')
+
+                f = open(fn)
+                data = f.read()
+                s = 'Sending file: {fn} ({fs} bytes)'.format(fn=fn, fs=len(data))
+                screen.addstr(4, 2, s)
+                screen.refresh()
+                start = datetime.datetime.now()
+                cc.send_bit(1)
+                cc.send_string(data + '\0')
+                delta = datetime.datetime.now() - start
+                s = 'Complete. time: {s}'.format(s=str(delta))
+                screen.addstr(5, 2, s)
+                screen.addstr(7, 2, 'Press any key to continue...')
+                screen.refresh()
+                screen.getch()
+
+            elif c == ord('3') or c == ord('q'):
+                cc.stop()
+                break
+            else:
+                pass
 
 
 
@@ -142,8 +201,7 @@ def main(screen, argv):
                 u_in = raw_input('Message: ') + '\0'
                 print 'sending...'
                 start = datetime.datetime.now()
-                # PUT THIS BACK IN
-                # cc.send_bit(0)
+                cc.send_bit(0)
                 cc.send_string(u_in)
                 delta = datetime.datetime.now() - start
                 s = 'complete. time: {s}'.format(s=str(delta))
