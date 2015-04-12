@@ -11,7 +11,7 @@ def ClearByte():
 
 def PrintTitle(stdscr,Xmax, Ymax):
     BottomHeight = 5
-    Title = "Ultras0nic Air-Gap Retreiver"
+    Title = "Ultras0nic Air-Gap Receiver"
     Xloc = (Xmax/2) - (len(Title)/2)
     stdscr.addstr(1,Xloc,Title)
     stdscr.border()
@@ -130,6 +130,7 @@ def main(stdscr):
                         InfoBit = True
                         if BitType == 1 and not FileOpen:
                             OpenedFile = open("out",'w')
+                            stdscr.addch(1,1,'-')
 
                     streak = FreqList.count(FreqList[0]) == len(FreqList)
                     if streak:
@@ -162,9 +163,13 @@ def main(stdscr):
                                     InfoBit = False
                                     BitType = -1
                                 else:
+                                    stdscr.addch(1,1,'$')
+                                    stdscr.refresh()
                                     if OpenedFile:
                                         OpenedFile.close()
                                         OpenedFile = 0
+                                        stdscr.addch(1,1,'+')
+                                        stdscr.refresh()
                                     InfoBit = False
                                     BitType = -1
                             else:
